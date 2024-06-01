@@ -1,68 +1,67 @@
-const Crud = require("../models/crudModel");
+const Crud = require('../models/crudModel');
 
-// Display All CRUD Data
-const crud_index = (req, res) => {
-	Crud.find(function (err, cruds) {
-		res.json(cruds);
-	});
+const crud_index = async (req, res) => {
+  try {
+    const cruds = await Crud.find();
+    res.json(cruds);
+  } catch (error) {
+    res.status(500).send('Error fetching CRUD data');
+  }
 };
 
-// Create New CRUD
-const crud_create_post = (req, res) => {
-	let crud = new Crud(req.body);
-	crud
-		.save()
-		.then((crud) => {
-			res.send(crud);
-		})
-		.catch(function (err) {
-			res.status(422).send("Crud add failed");
-		});
+const crud_create_post = async (req, res) => {
+  const crud = new Crud(req.body);
+  try {
+    const newCrud = await crud.save();
+    res.status(201).json(newCrud);
+  } catch (error) {
+    res.status(422).send('Crud add failed');
+  }
 };
 
-// Show a particular CRUD Detail by Id
-const crud_details = (req, res) => {
-	Crud.findById(req.params.id, function (err, crud) {
-		if (!crud) {
-			res.status(404).send("No result found");
-		} else {
-			res.json(crud);
-		}
-	});
+const crud_details = async (req, res) => {
+  try {
+    const crud = await Crud.findById(req.params.id);
+    if (!crud) {
+      res.status(404).send('No result found');
+    } else {
+      res.json(crud);
+    }
+  } catch (error) {
+    res.status(500).send('Error fetching CRUD details');
+  }
 };
 
-// Update CRUD Detail by Id
-const crud_update = (req, res) => {
-	Crud.findByIdAndUpdate(req.params.id, req.body)
-		.then(function () {
-			res.json("Crud updated");
-		})
-		.catch(function (err) {
-			res.status(422).send("Crud update failed.");
-		});
+const crud_update = async (req, res) => {
+  try {
+    const crud = await Crud.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    if (!crud) {
+      res.status(404).send('Crud not found');
+    } else {
+      res.json(crud);
+    }
+  } catch (error) {
+    res.status(422).send('Crud update failed.');
+  }
 };
 
-// Delete CRUD Detail by Id
-const crud_delete = (req, res) => {
-	Crud.findById(req.params.id, function (err, crud) {
-		if (!crud) {
-			res.status(404).send("Crud not found");
-		} else {
-			Crud.findByIdAndRemove(req.params.id)
-				.then(function () {
-					res.status(200).json("Crud deleted");
-				})
-				.catch(function (err) {
-					res.status(400).send("Crud delete failed.");
-				});
-		}
-	});
+const crud_delete = async (req, res) => {
+  try {
+    const crud = await Crud.findByIdAndDelete(req.params.id);
+    if (!crud) {
+      res.status(404).send('Crud not found');
+    } else {
+      res.json('Crud deleted');
+    }
+  } catch (error) {
+    res.status(400).send('Crud delete failed.');
+  }
 };
 
 module.exports = {
-	crud_index,
-	crud_details,
-	crud_create_post,
-	crud_update,
-	crud_delete,
+  crud_index,
+  crud_create_post,
+  crud_details,
+  crud_update,
+  crud_delete,
 };
